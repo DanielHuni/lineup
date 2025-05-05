@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성가대 줄 세우기 프로그램</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="icons/icon-192.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>성가대 줄 세우기 프로그램</h1>
+    <form id="choirForm">
+        <label>총 줄 수: <input type="number" id="numRows" value="5" min="1"></label>
+        <br><br>
+        <label>Soprano 인원: <input type="number" id="sopranoCount" value="23" min="0"></label>
+        <br>
+        <label>Alto 인원: <input type="number" id="altoCount" value="13" min="0"></label>
+        <br>
+        <label>Tenor 인원: <input type="number" id="tenorCount" value="9" min="0"></label>
+        <br>
+        <label>Bass 인원: <input type="number" id="bassCount" value="7" min="0"></label>
+        <br><br>
+        <button type="submit">줄 세우기</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById("choirForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const numRows = parseInt(document.getElementById("numRows").value);
+            const sopranoCount = parseInt(document.getElementById("sopranoCount").value);
+            const altoCount = parseInt(document.getElementById("altoCount").value);
+            const tenorCount = parseInt(document.getElementById("tenorCount").value);
+            const bassCount = parseInt(document.getElementById("bassCount").value);
+
+            const totalCount = sopranoCount + altoCount + tenorCount + bassCount;
+            const avgPerRow = Math.ceil(totalCount / numRows);
+
+            const rowGroups = Array.from({ length: numRows }, () => ({ Soprano: 0, Alto: 0, Tenor: 0, Bass: 0 }));
+
+            function distribute(count, startRow, endRow, part) {
+                let index = 0;
+                for (let i = 0; i < count; i++) {
+                    const row = startRow + (index % (endRow - startRow + 1));
+                    rowGroups[row][part]++;
+                    index++;
+                }
+            }
+
+            const upperLimit = Math.ceil(numRows * 0.6) - 1;
+            const lowerStart = upperLimit + 1;
+
+            distribute(sopranoCount, 0, numRows - 1, "Soprano");
+            distribute(altoCount, 0, upperLimit, "Alto");
+            distribute(tenorCount, lowerStart, numRows - 1, "Tenor");
+            distribute(bassCount, lowerStart, numRows - 1, "Bass");
+
+            let html = "<h2>줄별 파트 인원 현황</h2><table><tr><th>줄</th><th>Soprano</th><th>Alto</th><th>Tenor</th><th>Bass</th></tr>";
+            for (let i = 0; i < numRows; i++) {
+                const row = rowGroups[i];
+                html += `<tr><td>${i + 1}줄</td><td>${row.Soprano}</td><td>${row.Alto}</td><td>${row.Tenor}</td><td>${row.Bass}</td></tr>`;
+            }
+            html += "</table>";
+
+            document.getElementById("result").innerHTML = html;
+        });
+    </script>
+</body>
+</html>
